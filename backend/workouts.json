@@ -1,0 +1,34 @@
+[
+  {
+    "id": 1,
+    "name": "Penkkipunnerrus",
+    "sets": 3,
+    "reps": 10,
+    "weight": 80,
+    "date": "2024-01-15"
+  },
+  {
+    "id": 2,
+    "name": "Kyykky",
+    "sets": 4,
+    "reps": 8,
+    "weight": 100,
+    "date": "2024-01-15"
+  },
+  {
+    "id": 3,
+    "name": "Maastaveto",
+    "sets": 3,
+    "reps": 5,
+    "weight": 120,
+    "date": "2024-01-16"
+  },
+  {
+    "id": 4,
+    "name": "Latpulldown",
+    "sets": 4,
+    "reps": 10,
+    "weight": 60,
+    "date": "2025-10-04"
+  }
+]

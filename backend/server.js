@@ -3,12 +3,20 @@ import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import dotenv from 'dotenv';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 // Lataa ympäristömuuttujat
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3001;
+
+// Tiedostopolun määritys ES modules yhteensopivuutta varten
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const workoutsFilePath = path.join(__dirname, 'workouts.json');
 
 // Middleware
 app.use(helmet()); // Turvallisuus middleware
@@ -17,35 +25,33 @@ app.use(morgan('combined')); // Lokitus
 app.use(express.json()); // JSON-parseri
 app.use(express.urlencoded({ extended: true })); // URL-enkoodattu data
 
-// Dummy data (oikeassa sovelluksessa tämä olisi tietokannassa)
-let workouts = [
-  {
-    id: 1,
-    name: "Penkkipunnerrus",
-    sets: 3,
-    reps: 10,
-    weight: 80,
-    date: "2024-01-15"
-  },
-  {
-    id: 2,
-    name: "Kyykky",
-    sets: 4,
-    reps: 8,
-    weight: 100,
-    date: "2024-01-15"
-  },
-  {
-    id: 3,
-    name: "Maastaveto",
-    sets: 3,
-    reps: 5,
-    weight: 120,
-    date: "2024-01-16"
+// Funktiot JSON-tiedoston lukemiseen ja tallentamiseen
+const readWorkoutsFromFile = () => {
+  try {
+    if (fs.existsSync(workoutsFilePath)) {
+      const data = fs.readFileSync(workoutsFilePath, 'utf8');
+      return JSON.parse(data);
+    }
+    return [];
+  } catch (error) {
+    console.error('Virhe treenien lukemisessa:', error);
+    return [];
   }
-];
+};
 
-let nextId = 4;
+const saveWorkoutsToFile = (workouts) => {
+  try {
+    fs.writeFileSync(workoutsFilePath, JSON.stringify(workouts, null, 2));
+  } catch (error) {
+    console.error('Virhe treenien tallentamisessa:', error);
+  }
+};
+
+// Lataa treenit tiedostosta
+let workouts = readWorkoutsFromFile();
+
+// Etsi suurin ID ja aseta nextId sen mukaan
+let nextId = workouts.length > 0 ? Math.max(...workouts.map(w => w.id)) + 1 : 1;
 
 // Terveystarkistus
 app.get('/health', (req, res) => {
@@ -122,6 +128,7 @@ app.post('/api/workouts', (req, res) => {
     };
     
     workouts.push(newWorkout);
+    saveWorkoutsToFile(workouts); // Tallenna tiedostoon
     
     res.status(201).json({
       success: true,
@@ -159,6 +166,8 @@ app.put('/api/workouts/:id', (req, res) => {
     if (weight !== undefined) workouts[workoutIndex].weight = parseFloat(weight);
     if (date !== undefined) workouts[workoutIndex].date = date;
     
+    saveWorkoutsToFile(workouts); // Tallenna tiedostoon
+    
     res.status(200).json({
       success: true,
       message: 'Treeni päivitetty onnistuneesti',
@@ -187,6 +196,7 @@ app.delete('/api/workouts/:id', (req, res) => {
     }
     
     const deletedWorkout = workouts.splice(workoutIndex, 1)[0];
+    saveWorkoutsToFile(workouts); // Tallenna tiedostoon
     
     res.status(200).json({
       success: true,

@@ -1,19 +1,14 @@
-### Health Check
-GET http://localhost:3001/health
-
-###
-
-### Hae kaikki treenit
+### Get all workouts
 GET http://localhost:3001/api/workouts
 
 ###
 
-### Hae yksittäinen treeni (ID: 1)
+### Get single workout
 GET http://localhost:3001/api/workouts/1
 
 ###
 
-### Lisää uusi treeni
+### Create a new workout
 POST http://localhost:3001/api/workouts
 Content-Type: application/json
 
@@ -27,7 +22,7 @@ Content-Type: application/json
 
 ###
 
-### Päivitä treeni (ID: 1)
+### Update workout
 PUT http://localhost:3001/api/workouts/1
 Content-Type: application/json
 
@@ -40,20 +35,10 @@ Content-Type: application/json
 
 ###
 
-### Poista treeni (ID: 3)
+### Delete workout
 DELETE http://localhost:3001/api/workouts/3
 
 ###
 
-### Testaa virheellinen pyyntö (puuttuvat kentät)
-POST http://localhost:3001/api/workouts
-Content-Type: application/json
-
-{
-  "name": "Epätäydellinen treeni"
-}
-
-###
-
-### Testaa olematon reitti (404)
-GET http://localhost:3001/api/olematon-reitti
+### Health check
+GET http://localhost:3001/health

@@ -6,11 +6,21 @@
 }
 
 .error-message {
-  color: red;
+  color: #d32f2f;
   background-color: #ffe6e6;
   padding: 10px;
   border-radius: 5px;
   margin-bottom: 20px;
+  border: 1px solid #ffcdd2;
+}
+
+.success-message {
+  color: #2e7d32;
+  background-color: #e8f5e8;
+  padding: 10px;
+  border-radius: 5px;
+  margin-bottom: 20px;
+  border: 1px solid #c8e6c9;
 }
 
 .add-workout-section {
