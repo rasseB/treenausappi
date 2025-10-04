@@ -1,0 +1,59 @@
+### Health Check
+GET http://localhost:3001/health
+
+###
+
+### Hae kaikki treenit
+GET http://localhost:3001/api/workouts
+
+###
+
+### Hae yksittäinen treeni (ID: 1)
+GET http://localhost:3001/api/workouts/1
+
+###
+
+### Lisää uusi treeni
+POST http://localhost:3001/api/workouts
+Content-Type: application/json
+
+{
+  "name": "Hauiskääntö",
+  "sets": 3,
+  "reps": 12,
+  "weight": 25,
+  "date": "2024-01-17"
+}
+
+###
+
+### Päivitä treeni (ID: 1)
+PUT http://localhost:3001/api/workouts/1
+Content-Type: application/json
+
+{
+  "name": "Penkkipunnerrus (päivitetty)",
+  "sets": 4,
+  "reps": 8,
+  "weight": 85
+}
+
+###
+
+### Poista treeni (ID: 3)
+DELETE http://localhost:3001/api/workouts/3
+
+###
+
+### Testaa virheellinen pyyntö (puuttuvat kentät)
+POST http://localhost:3001/api/workouts
+Content-Type: application/json
+
+{
+  "name": "Epätäydellinen treeni"
+}
+
+###
+
+### Testaa olematon reitti (404)
+GET http://localhost:3001/api/olematon-reitti
