@@ -2,21 +2,12 @@ import { useState } from 'react'
 import WorkoutItem from './WorkoutItem'
 
 const WorkoutList = ({ workouts, onDelete, onRefresh, loading }) => {
-  const [filterExercise, setFilterExercise] = useState('')
+  const [searchTerm, setSearchTerm] = useState('')
   const [sortBy, setSortBy] = useState('date')
 
-  // Laske tilastoja .map() metodilla
-  const stats = {
-    totalWorkouts: workouts.length,
-    uniqueExercises: [...new Set(workouts.map(w => w.name))].length,
-    totalSets: workouts.map(w => parseInt(w.sets) || 0).reduce((sum, sets) => sum + sets, 0),
-    totalReps: workouts.map(w => parseInt(w.reps) || 0).reduce((sum, reps) => sum + reps, 0),
-    totalWeight: workouts.map(w => parseInt(w.weight) || 0).reduce((sum, weight) => sum + weight, 0)
-  }
-
-  // Suodata ja järjestä treenit .map() ja .filter() metodilla
+  // Suodata ja järjestä treenit hakusanan perusteella
   const filteredAndSortedWorkouts = workouts
-    .filter(workout => filterExercise === '' || workout.name.toLowerCase().includes(filterExercise.toLowerCase()))
+    .filter(workout => searchTerm === '' || workout.name.toLowerCase().includes(searchTerm.toLowerCase()))
     .sort((a, b) => {
       switch (sortBy) {
         case 'name':
@@ -29,56 +20,19 @@ const WorkoutList = ({ workouts, onDelete, onRefresh, loading }) => {
       }
     })
 
-  // Hae uniikit liikkeet suodatinta varten
-  const uniqueExercises = [...new Set(workouts.map(w => w.name))].sort()
-
   return (
     <div>
-      <div className="workouts-header">
-        <h2>Treenit ({workouts.length})</h2>
-        <button 
-          onClick={onRefresh} 
-          disabled={loading}
-          className="btn btn-success"
-        >
-          {loading ? 'Ladataan...' : 'Päivitä'}
-        </button>
-      </div>
-
-      {workouts.length > 0 && (
-        <div className="workout-stats">
-          <h3>Tilastot</h3>
-          <div className="stats-grid">
-            {[
-              { label: 'Treenejä yhteensä', value: stats.totalWorkouts },
-              { label: 'Eri liikkeitä', value: stats.uniqueExercises },
-              { label: 'Sarjoja yhteensä', value: stats.totalSets },
-              { label: 'Toistoja yhteensä', value: stats.totalReps },
-              { label: 'Painoa yhteensä', value: `${stats.totalWeight} kg` }
-            ].map(stat => (
-              <div key={stat.label} className="stat-item">
-                <span className="stat-label">{stat.label}:</span>
-                <span className="stat-value">{stat.value}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
       {workouts.length > 0 && (
         <div className="workout-filters">
           <div className="filter-section">
-            <label>Suodata liikkeittain:</label>
-            <select 
-              value={filterExercise} 
-              onChange={(e) => setFilterExercise(e.target.value)}
-              className="filter-select"
-            >
-              <option value="">Kaikki liikkeet</option>
-              {uniqueExercises.map(exercise => (
-                <option key={exercise} value={exercise}>{exercise}</option>
-              ))}
-            </select>
+            <label>Hae liikkeittain:</label>
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Kirjoita liikkeen nimi..."
+              className="search-input"
+            />
           </div>
           <div className="filter-section">
             <label>Järjestä:</label>
@@ -110,20 +64,28 @@ const WorkoutList = ({ workouts, onDelete, onRefresh, loading }) => {
             }, {})
           )
           .sort(([a], [b]) => new Date(b) - new Date(a))
-          .map(([date, dayWorkouts]) => (
-            <div key={date} className="workout-day">
-              <h3 className="date-header">{new Date(date).toLocaleDateString('fi-FI')}</h3>
-              <div className="workouts-grid">
-                {dayWorkouts.map(workout => (
-                  <WorkoutItem 
-                    key={workout.id} 
-                    workout={workout} 
-                    onDelete={onDelete} 
-                  />
-                ))}
+          .map(([date, dayWorkouts]) => {
+            // Hae ensimmäisen treenin workoutType (oletetaan että samana päivänä on sama tyyppi)
+            const workoutType = dayWorkouts[0]?.workoutType
+            const workoutTypeText = workoutType ? ` - ${workoutType.charAt(0).toUpperCase() + workoutType.slice(1)}` : ''
+            
+            return (
+              <div key={date} className="workout-day">
+                <h3 className="date-header">
+                  {new Date(date).toLocaleDateString('fi-FI')}{workoutTypeText}
+                </h3>
+                <div className="workouts-grid">
+                  {dayWorkouts.map(workout => (
+                    <WorkoutItem 
+                      key={workout.id} 
+                      workout={workout} 
+                      onDelete={onDelete} 
+                    />
+                  ))}
+                </div>
               </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
       )}
     </div>

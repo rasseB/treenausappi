@@ -6,7 +6,8 @@ const WorkoutForm = ({ onSubmit }) => {
     sets: '',
     reps: '',
     weight: '',
-    date: new Date().toISOString().split('T')[0]
+    date: new Date().toISOString().split('T')[0],
+    workoutType: ''
   })
 
   const handleInputChange = (event) => {
@@ -25,13 +26,14 @@ const WorkoutForm = ({ onSubmit }) => {
       sets: '',
       reps: '',
       weight: '',
-      date: new Date().toISOString().split('T')[0]
+      date: new Date().toISOString().split('T')[0],
+      workoutType: ''
     })
   }
 
   return (
     <div className="add-workout-section">
-      <h2>Lisää uusi treeni</h2>
+      <h2>Suunnitele uusi treenipäivä</h2>
       <form onSubmit={handleSubmit}>
         <div className="form-grid">
           <div className="form-field">
@@ -52,6 +54,21 @@ const WorkoutForm = ({ onSubmit }) => {
               value={newWorkout.date}
               onChange={handleInputChange}
             />
+          </div>
+          <div className="form-field">
+            <label>Treenipäivän tyyppi:</label>
+            <select
+              name="workoutType"
+              value={newWorkout.workoutType}
+              onChange={handleInputChange}
+              required
+            >
+              <option value="">Valitse tyyppi</option>
+              <option value="push">Push</option>
+              <option value="pull">Pull</option>
+              <option value="legs">Legs</option>
+              <option value="arms">Arms</option>
+            </select>
           </div>
           <div className="form-field">
             <label>Sarjat:</label>
