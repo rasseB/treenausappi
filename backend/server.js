@@ -1,29 +1,21 @@
 import express from 'express';
 import cors from 'cors';
-import helmet from 'helmet';
-import morgan from 'morgan';
-import dotenv from 'dotenv';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
-// Lataa ympäristömuuttujat
-dotenv.config();
-
-const app = express();
-const PORT = process.env.PORT || 3001;
-
-// Tiedostopolun määritys ES modules yhteensopivuutta varten
+// Tiedostopolun määritys ES modules -ympäristössä
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const workoutsFilePath = path.join(__dirname, 'workouts.json');
 
+const app = express();
+const PORT = 3001;
+
 // Middleware
-app.use(helmet()); // Turvallisuus middleware
-app.use(cors()); // CORS-tuki frontend-yhteyksiä varten
-app.use(morgan('combined')); // Lokitus
-app.use(express.json()); // JSON-parseri
-app.use(express.urlencoded({ extended: true })); // URL-enkoodattu data
+app.use(cors());
+app.use(express.json());
+
 
 // Funktiot JSON-tiedoston lukemiseen ja tallentamiseen
 const readWorkoutsFromFile = () => {
@@ -32,10 +24,10 @@ const readWorkoutsFromFile = () => {
       const data = fs.readFileSync(workoutsFilePath, 'utf8');
       return JSON.parse(data);
     }
-    return [];
+    return {};
   } catch (error) {
     console.error('Virhe treenien lukemisessa:', error);
-    return [];
+    return {};
   }
 };
 
@@ -47,28 +39,37 @@ const saveWorkoutsToFile = (workouts) => {
   }
 };
 
-// Lataa treenit tiedostosta
+// Lataa treenit tiedostosta (objekti, jossa päivämäärät avaimina)
 let workouts = readWorkoutsFromFile();
 
-// Etsi suurin ID ja aseta nextId sen mukaan
-let nextId = workouts.length > 0 ? Math.max(...workouts.map(w => w.id)) + 1 : 1;
+// Apufunktio seuraavan liike-ID:n löytämiseksi
+const getNextExerciseId = () => {
+  let maxId = 0;
+  Object.values(workouts).forEach(day => {
+    if (day.exercises) {
+      day.exercises.forEach(ex => {
+        if (ex.id > maxId) maxId = ex.id;
+      });
+    }
+  });
+  return maxId + 1;
+};
 
-// Terveystarkistus
+// Health check
 app.get('/health', (req, res) => {
-  res.status(200).json({ 
-    status: 'OK', 
+  res.status(200).json({
+    status: 'OK',
     message: 'Backend toimii!',
     timestamp: new Date().toISOString()
   });
 });
 
-// GET - Hae kaikki treenit
+// GET - Hae kaikki päivät ja niiden treenit
 app.get('/api/workouts', (req, res) => {
   try {
     res.status(200).json({
       success: true,
-      data: workouts,
-      count: workouts.length
+      data: workouts
     });
   } catch (error) {
     res.status(500).json({
@@ -79,22 +80,22 @@ app.get('/api/workouts', (req, res) => {
   }
 });
 
-// GET - Hae yksittäinen treeni ID:n perusteella
-app.get('/api/workouts/:id', (req, res) => {
+// GET - Hae tietyn päivän treeni
+app.get('/api/workouts/:date', (req, res) => {
   try {
-    const id = parseInt(req.params.id);
-    const workout = workouts.find(w => w.id === id);
+    const { date } = req.params;
+    const dayWorkout = workouts[date];
     
-    if (!workout) {
+    if (!dayWorkout) {
       return res.status(404).json({
         success: false,
-        message: 'Treeniä ei löytynyt'
+        message: 'Kyseiselle päivälle ei löytynyt treeniä'
       });
     }
     
     res.status(200).json({
       success: true,
-      data: workout
+      data: dayWorkout
     });
   } catch (error) {
     res.status(500).json({
@@ -105,12 +106,12 @@ app.get('/api/workouts/:id', (req, res) => {
   }
 });
 
-// POST - Lisää uusi treeni
-app.post('/api/workouts', (req, res) => {
+// POST - Lisää uusi päivä tai liike päivään
+app.post('/api/workouts/:date/exercises', (req, res) => {
   try {
-    const { name, sets, reps, weight, date } = req.body;
+    const { date } = req.params;
+    const { name, sets, reps, weight } = req.body;
     
-    // Validointi
     if (!name || !sets || !reps || !weight) {
       return res.status(400).json({
         success: false,
@@ -118,95 +119,154 @@ app.post('/api/workouts', (req, res) => {
       });
     }
     
-    const newWorkout = {
-      id: nextId++,
+    // Jos päivää ei ole, luo se
+    if (!workouts[date]) {
+      const dayNames = ['Sunnuntai', 'Maanantai', 'Tiistai', 'Keskiviikko', 'Torstai', 'Perjantai', 'Lauantai'];
+      const dateObj = new Date(date);
+      const dayName = dayNames[dateObj.getDay()];
+      
+      workouts[date] = {
+        date: date,
+        dayName: dayName,
+        workoutType: 'Lepo',
+        exercises: []
+      };
+    }
+    
+    const newExercise = {
+      id: getNextExerciseId(),
       name: name.trim(),
       sets: parseInt(sets),
       reps: parseInt(reps),
       weight: parseFloat(weight),
-      date: date || new Date().toISOString().split('T')[0]
+      completed: false
     };
     
-    workouts.push(newWorkout);
-    saveWorkoutsToFile(workouts); // Tallenna tiedostoon
+    workouts[date].exercises.push(newExercise);
+    saveWorkoutsToFile(workouts);
     
     res.status(201).json({
       success: true,
-      message: 'Treeni lisätty onnistuneesti',
-      data: newWorkout
+      message: 'Liike lisätty onnistuneesti',
+      data: newExercise
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: 'Virhe treenin lisäämisessä',
+      message: 'Virhe liikkeen lisäämisessä',
       error: error.message
     });
   }
 });
 
-// PUT - Päivitä treeni
-app.put('/api/workouts/:id', (req, res) => {
+// PUT - Päivitä päivän treenityyppi
+app.put('/api/workouts/:date/type', (req, res) => {
   try {
-    const id = parseInt(req.params.id);
-    const workoutIndex = workouts.findIndex(w => w.id === id);
+    const { date } = req.params;
+    const { workoutType } = req.body;
     
-    if (workoutIndex === -1) {
-      return res.status(404).json({
-        success: false,
-        message: 'Treeniä ei löytynyt'
-      });
+    // Jos päivää ei ole, luo se
+    if (!workouts[date]) {
+      const dayNames = ['Sunnuntai', 'Maanantai', 'Tiistai', 'Keskiviikko', 'Torstai', 'Perjantai', 'Lauantai'];
+      const dateObj = new Date(date);
+      const dayName = dayNames[dateObj.getDay()];
+      
+      workouts[date] = {
+        date: date,
+        dayName: dayName,
+        workoutType: workoutType,
+        exercises: []
+      };
+    } else {
+      workouts[date].workoutType = workoutType;
     }
     
-    const { name, sets, reps, weight, date } = req.body;
-    
-    // Päivitä vain annetut kentät
-    if (name !== undefined) workouts[workoutIndex].name = name.trim();
-    if (sets !== undefined) workouts[workoutIndex].sets = parseInt(sets);
-    if (reps !== undefined) workouts[workoutIndex].reps = parseInt(reps);
-    if (weight !== undefined) workouts[workoutIndex].weight = parseFloat(weight);
-    if (date !== undefined) workouts[workoutIndex].date = date;
-    
-    saveWorkoutsToFile(workouts); // Tallenna tiedostoon
+    saveWorkoutsToFile(workouts);
     
     res.status(200).json({
       success: true,
-      message: 'Treeni päivitetty onnistuneesti',
-      data: workouts[workoutIndex]
+      message: 'Treenityyppi päivitetty',
+      data: workouts[date]
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: 'Virhe treenin päivittämisessä',
+      message: 'Virhe päivityksessä',
       error: error.message
     });
   }
 });
 
-// DELETE - Poista treeni
-app.delete('/api/workouts/:id', (req, res) => {
+// PUT - Merkkaa liike tehdyksi/ei-tehdyksi
+app.put('/api/workouts/:date/exercises/:exerciseId', (req, res) => {
   try {
-    const id = parseInt(req.params.id);
-    const workoutIndex = workouts.findIndex(w => w.id === id);
+    const { date, exerciseId } = req.params;
+    const { completed } = req.body;
     
-    if (workoutIndex === -1) {
+    if (!workouts[date]) {
       return res.status(404).json({
         success: false,
-        message: 'Treeniä ei löytynyt'
+        message: 'Päivää ei löytynyt'
       });
     }
     
-    const deletedWorkout = workouts.splice(workoutIndex, 1)[0];
-    saveWorkoutsToFile(workouts); // Tallenna tiedostoon
+    const exercise = workouts[date].exercises.find(ex => ex.id === parseInt(exerciseId));
+    if (!exercise) {
+      return res.status(404).json({
+        success: false,
+        message: 'Liikettä ei löytynyt'
+      });
+    }
+    
+    exercise.completed = completed;
+    saveWorkoutsToFile(workouts);
     
     res.status(200).json({
       success: true,
-      message: 'Treeni poistettu onnistuneesti',
-      data: deletedWorkout
+      message: 'Liikkeen tila päivitetty',
+      data: exercise
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: 'Virhe treenin poistamisessa',
+      message: 'Virhe päivityksessä',
+      error: error.message
+    });
+  }
+});
+
+// DELETE - Poista liike
+app.delete('/api/workouts/:date/exercises/:exerciseId', (req, res) => {
+  try {
+    const { date, exerciseId } = req.params;
+    
+    if (!workouts[date]) {
+      return res.status(404).json({
+        success: false,
+        message: 'Päivää ei löytynyt'
+      });
+    }
+    
+    const exerciseIndex = workouts[date].exercises.findIndex(ex => ex.id === parseInt(exerciseId));
+    if (exerciseIndex === -1) {
+      return res.status(404).json({
+        success: false,
+        message: 'Liikettä ei löytynyt'
+      });
+    }
+    
+    const deletedExercise = workouts[date].exercises.splice(exerciseIndex, 1)[0];
+    saveWorkoutsToFile(workouts);
+    
+    res.status(200).json({
+      success: true,
+      message: 'Liike poistettu onnistuneesti',
+      data: deletedExercise
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Virhe poistamisessa',
       error: error.message
     });
   }

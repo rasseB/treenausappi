@@ -11,13 +11,24 @@ const getAll = async () => {
   return data.data
 }
 
-const create = async (newWorkout) => {
-  const response = await fetch(baseUrl, {
+const getDay = async (date) => {
+  const response = await fetch(`${baseUrl}/${date}`)
+  const data = await response.json()
+  
+  if (!data.success) {
+    throw new Error(data.message)
+  }
+  
+  return data.data
+}
+
+const addExercise = async (date, exercise) => {
+  const response = await fetch(`${baseUrl}/${date}/exercises`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify(newWorkout),
+    body: JSON.stringify(exercise),
   })
   
   const data = await response.json()
@@ -29,8 +40,26 @@ const create = async (newWorkout) => {
   return data.data
 }
 
-const remove = async (id) => {
-  const response = await fetch(`${baseUrl}/${id}`, {
+const toggleExercise = async (date, exerciseId, completed) => {
+  const response = await fetch(`${baseUrl}/${date}/exercises/${exerciseId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ completed }),
+  })
+  
+  const data = await response.json()
+  
+  if (!data.success) {
+    throw new Error(data.message)
+  }
+  
+  return data.data
+}
+
+const removeExercise = async (date, exerciseId) => {
+  const response = await fetch(`${baseUrl}/${date}/exercises/${exerciseId}`, {
     method: 'DELETE',
   })
   
@@ -43,13 +72,13 @@ const remove = async (id) => {
   return data.data
 }
 
-const update = async (id, updatedWorkout) => {
-  const response = await fetch(`${baseUrl}/${id}`, {
+const updateWorkoutType = async (date, workoutType) => {
+  const response = await fetch(`${baseUrl}/${date}/type`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify(updatedWorkout),
+    body: JSON.stringify({ workoutType }),
   })
   
   const data = await response.json()
@@ -61,4 +90,4 @@ const update = async (id, updatedWorkout) => {
   return data.data
 }
 
-export default { getAll, create, remove, update }
+export default { getAll, getDay, addExercise, toggleExercise, removeExercise, updateWorkoutType }
