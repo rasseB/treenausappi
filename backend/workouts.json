@@ -10,23 +10,7 @@
         "sets": 3,
         "reps": 10,
         "weight": 80,
-        "completed": false
-      },
-      {
-        "id": 2,
-        "name": "Hauiskääntö",
-        "sets": 3,
-        "reps": 12,
-        "weight": 25,
-        "completed": false
-      },
-      {
-        "id": 3,
-        "name": "Penkkipunnerrus",
-        "sets": 4,
-        "reps": 10,
-        "weight": 80,
-        "completed": false
+        "completed": true
       }
     ]
   },
@@ -40,7 +24,16 @@
     "date": "2025-10-22",
     "dayName": "Keskiviikko",
     "workoutType": "Jalat",
-    "exercises": []
+    "exercises": [
+      {
+        "id": 4,
+        "name": "Jalkaprässi",
+        "sets": 3,
+        "reps": 12,
+        "weight": 120,
+        "completed": false
+      }
+    ]
   },
   "2025-10-23": {
     "date": "2025-10-23",
