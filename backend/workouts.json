@@ -1,4 +1,4 @@
-﻿{
+{
   "2025-10-20": {
     "date": "2025-10-20",
     "dayName": "Maanantai",
@@ -19,19 +19,27 @@
         "reps": 12,
         "weight": 25,
         "completed": false
+      },
+      {
+        "id": 3,
+        "name": "Penkkipunnerrus",
+        "sets": 4,
+        "reps": 10,
+        "weight": 80,
+        "completed": false
       }
     ]
+  },
+  "2025-10-21": {
+    "date": "2025-10-21",
+    "dayName": "Tiistai",
+    "workoutType": "Veto",
+    "exercises": []
   },
   "2025-10-22": {
     "date": "2025-10-22",
     "dayName": "Keskiviikko",
     "workoutType": "Jalat",
-    "exercises": []
-  },
-  "2025-10-24": {
-    "date": "2025-10-24",
-    "dayName": "Perjantai",
-    "workoutType": "Työntö",
     "exercises": []
   },
   "2025-10-23": {
@@ -40,10 +48,10 @@
     "workoutType": "Lepo",
     "exercises": []
   },
-  "2025-10-21": {
-    "date": "2025-10-21",
-    "dayName": "Tiistai",
-    "workoutType": "Veto",
+  "2025-10-24": {
+    "date": "2025-10-24",
+    "dayName": "Perjantai",
+    "workoutType": "Työntö",
     "exercises": []
   },
   "2025-10-25": {
@@ -54,42 +62,6 @@
   },
   "2025-10-26": {
     "date": "2025-10-26",
-    "dayName": "Sunnuntai",
-    "workoutType": "Jalat",
-    "exercises": []
-  },
-  "2025-10-27": {
-    "date": "2025-10-27",
-    "dayName": "Maanantai",
-    "workoutType": "Työntö",
-    "exercises": []
-  },
-  "2025-10-28": {
-    "date": "2025-10-28",
-    "dayName": "Tiistai",
-    "workoutType": "Veto",
-    "exercises": []
-  },
-  "2025-10-29": {
-    "date": "2025-10-29",
-    "dayName": "Keskiviikko",
-    "workoutType": "Jalat",
-    "exercises": []
-  },
-  "2025-10-31": {
-    "date": "2025-10-31",
-    "dayName": "Perjantai",
-    "workoutType": "Työntö",
-    "exercises": []
-  },
-  "2025-11-01": {
-    "date": "2025-11-01",
-    "dayName": "Lauantai",
-    "workoutType": "Veto",
-    "exercises": []
-  },
-  "2025-11-02": {
-    "date": "2025-11-02",
     "dayName": "Sunnuntai",
     "workoutType": "Jalat",
     "exercises": []

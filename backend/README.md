@@ -21,10 +21,6 @@ npm install
 npm run dev
 ```
 
-Tai tuotantokäyttöön:
-```bash
-npm start
-```
 
 ### API Endpoints
 
@@ -33,35 +29,60 @@ npm start
 #### Health Check
 - **GET** `/health` - Tarkista palvelimen tila
 
-#### Workouts
-- **GET** `/api/workouts` - Hae kaikki treenit
-- **GET** `/api/workouts/:id` - Hae yksittäinen treeni
-- **POST** `/api/workouts` - Lisää uusi treeni
-- **PUT** `/api/workouts/:id` - Päivitä treeni
-- **DELETE** `/api/workouts/:id` - Poista treeni
+#### Workouts (päivämääräkohtaiset)
+- **GET** `/api/workouts` - Hae kaikki päivät ja niiden treenit
+- **GET** `/api/workouts/:date` - Hae tietyn päivän treeni (esim. `2025-10-20`)
+- **POST** `/api/workouts/:date/exercises` - Lisää liike tietylle päivälle
+- **PUT** `/api/workouts/:date/type` - Vaihda päivän treenityyppi
+- **PUT** `/api/workouts/:date/exercises/:exerciseId` - Merkkaa liike tehdyksi/ei-tehdyksi
+- **DELETE** `/api/workouts/:date/exercises/:exerciseId` - Poista liike
 
-### Treenin tietorakenne
+### Päivän tietorakenne
 
 ```json
 {
-  "id": 1,
-  "name": "Penkkipunnerrus",
-  "sets": 3,
-  "reps": 10,
-  "weight": 80,
-  "date": "2024-01-15"
+  "2025-10-20": {
+    "date": "2025-10-20",
+    "dayName": "Maanantai",
+    "workoutType": "Työntö",
+    "exercises": [
+      {
+        "id": 1,
+        "name": "Penkkipunnerrus",
+        "sets": 3,
+        "reps": 10,
+        "weight": 80,
+        "completed": false
+      }
+    ]
+  }
 }
 ```
 
-### POST/PUT pyynnön body
+### POST liike - Request body
 
 ```json
 {
-  "name": "Treenin nimi",
+  "name": "Penkkipunnerrus",
   "sets": 3,
   "reps": 10,
-  "weight": 80,
-  "date": "2024-01-15" // valinnainen, käyttää tämän päivän päivämäärää jos ei anneta
+  "weight": 80
+}
+```
+
+### PUT treenityyppi - Request body
+
+```json
+{
+  "workoutType": "Työntö"
+}
+```
+
+### PUT liikkeen tila - Request body
+
+```json
+{
+  "completed": true
 }
 ```
 
@@ -90,15 +111,18 @@ Kaikki API-vastaukset ovat JSON-muodossa:
 ### Käytetyt teknologiat
 
 - Node.js
-- Express.js
+- Express.js 4
 - CORS (Cross-Origin Resource Sharing)
 - Helmet (turvallisuus)
 - Morgan (lokitus)
-- dotenv (ympäristömuuttujat)
 
 ### Kehitys
 
-Käytä `nodemon`ia kehityksessä automaattista uudelleenkäynnistystä varten:
+Backend käyttää `node --watch` komentoa automaattista uudelleenkäynnistystä varten:
 ```bash
 npm run dev
 ```
+
+### Testaus
+
+Käytä `requests.rest` tiedostoa API-testaukseen VS Coden REST Client -laajennuksella.
