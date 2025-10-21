@@ -78,5 +78,3 @@ Avaa selaimessa: http://localhost:5173
 - Node.js
 - Express 4
 - CORS
-- Helmet (turvallisuus)
-- Morgan (lokitus)

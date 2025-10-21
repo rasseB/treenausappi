@@ -113,8 +113,6 @@ Kaikki API-vastaukset ovat JSON-muodossa:
 - Node.js
 - Express.js 4
 - CORS (Cross-Origin Resource Sharing)
-- Helmet (turvallisuus)
-- Morgan (lokitus)
 
 ### Kehitys
 
